@@ -9,7 +9,7 @@ public class NtpPacket {
 
     public NtpPacket() {
         data = new byte[PACKET_SIZE];
-        data[0] = 0b00100011; // Leap Indicator, Version, Mode
+        data[0] = 0b00100011;
     }
 
     public byte[] toByteArray() {

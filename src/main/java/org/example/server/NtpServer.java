@@ -16,7 +16,7 @@ public class NtpServer {
         System.out.println("NTP Server started on port " + NTP_PORT);
 
         while (true) {
-            byte[] buffer = new byte[64];
+            byte[] buffer = new byte[80];//valor referente a 48 bytes do NTP + 32 bytes do HMAC
             DatagramPacket request = new DatagramPacket(buffer, buffer.length);
             socket.receive(request);
 

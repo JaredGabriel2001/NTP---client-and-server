@@ -28,7 +28,7 @@ public class NtpClient {
         DatagramPacket request = new DatagramPacket(dataToSend, dataToSend.length, address, port);
         socket.send(request);
 
-        byte[] buffer = new byte[64];
+        byte[] buffer = new byte[80]; //valor referente a 48 bytes do NTP + 32 bytes do HMAC
         DatagramPacket response = new DatagramPacket(buffer, buffer.length);
         socket.receive(response);
 
