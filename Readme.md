@@ -51,7 +51,7 @@ pacote NTP e nas funções de cliente e servidor.
 oficiais).
       - Calcular o timestamp correto e responder ao cliente com um pacote NTP
 devidamente formatado. 
-4. **Autenticação (Opcional):**
+4. **Autenticação:**
       - Implementar um sistema de autenticação usando HMAC, criptografando o conteúdo
 da mensagem com uma chave compartilhada.
       - Verificar a autenticidade das mensagens recebidas e garantir que apenas clientes
