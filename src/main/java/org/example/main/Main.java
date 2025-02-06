@@ -1,3 +1,7 @@
+//mvn package
+//mvn exec:java -Dexec.args="server"
+//mvn exec:java -Dexec.args="client 127.0.0.1"
+
 package org.example.main;
 
 import org.example.client.NtpClient;
