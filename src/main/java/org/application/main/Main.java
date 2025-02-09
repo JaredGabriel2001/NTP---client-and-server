@@ -1,17 +1,17 @@
 //mvn package
 
 //executar server COM hmac: mvn exec:java -Dexec.args="server hmac"
-//executar server SEM hmac: mvn exec:java -Dexec.args="server plain"
-
 //executar client COM hmac: mvn exec:java -Dexec.args="client hmac 127.0.0.1"
+
+//executar server SEM hmac: mvn exec:java -Dexec.args="server plain"
 //executar client SEM hmac: mvn exec:java -Dexec.args="client plain 127.0.0.1"
 
 //executar client para servidor oficial: mvn exec:java -Dexec.args="client official a.ntp.br"
 
-package org.example.application.main;
+package org.application.main;
 
-import org.example.application.client.NtpClient;
-import org.example.application.server.NtpServer;
+import org.application.client.NtpClient;
+import org.application.server.NtpServer;
 
 public class Main {
     public static void main(String[] args) throws Exception {

@@ -1,7 +1,8 @@
-package org.example.application.server;
+package org.application.server;
 
-import org.example.application.encryption.HmacUtil;
-import org.example.application.ntp.NtpPacket;
+import org.application.ntp.NtpPacket;
+import org.application.encryption.HmacUtil;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;

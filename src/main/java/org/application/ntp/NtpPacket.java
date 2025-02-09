@@ -1,4 +1,4 @@
-package org.example.application.ntp;
+package org.application.ntp;
 
 import java.nio.ByteBuffer;
 

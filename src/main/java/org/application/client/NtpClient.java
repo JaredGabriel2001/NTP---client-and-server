@@ -1,7 +1,7 @@
-package org.example.application.client;
+package org.application.client;
 
-import org.example.application.encryption.HmacUtil;
-import org.example.application.ntp.NtpPacket;
+import org.application.encryption.HmacUtil;
+import org.application.ntp.NtpPacket;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
