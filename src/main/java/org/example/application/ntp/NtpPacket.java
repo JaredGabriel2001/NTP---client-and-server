@@ -1,4 +1,4 @@
-package org.example.ntp;
+package org.example.application.ntp;
 
 import java.nio.ByteBuffer;
 
@@ -9,7 +9,7 @@ public class NtpPacket {
 
     public NtpPacket() {
         data = new byte[PACKET_SIZE];
-        data[0] = 0b00100011;
+        data[0] = 0b00100011; // Leap Indicator, Version, Mode
     }
 
     public byte[] toByteArray() {
@@ -31,4 +31,3 @@ public class NtpPacket {
         return ((seconds - NTP_EPOCH) * 1000) + ((fraction * 1000) / 0x100000000L);
     }
 }
-

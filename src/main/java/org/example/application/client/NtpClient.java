@@ -1,7 +1,7 @@
-package org.example.client;
+package org.example.application.client;
 
-import org.example.encryption.HmacUtil;
-import org.example.ntp.NtpPacket;
+import org.example.application.encryption.HmacUtil;
+import org.example.application.ntp.NtpPacket;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -9,9 +9,15 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class NtpClient {
-    private static final String SECRET_KEY = "shared-secret";
+    private final boolean useHmac;
+    private final int port;
 
-    public void requestTime(String serverAddress, int port) throws Exception {
+    public NtpClient(boolean useHmac, int port) {
+        this.useHmac = useHmac;
+        this.port = port;
+    }
+
+    public void requestTime(String serverAddress) throws Exception {
         DatagramSocket socket = new DatagramSocket();
         socket.setSoTimeout(5000);
 
@@ -19,7 +25,7 @@ public class NtpClient {
         NtpPacket packet = new NtpPacket();
         packet.setTransmitTimestamp(System.currentTimeMillis());
 
-        byte[] hmac = HmacUtil.generateHmac(packet.toByteArray(), SECRET_KEY);
+        byte[] hmac = useHmac ? HmacUtil.generateHmac(packet.toByteArray(), "shared-secret") : new byte[0];
         byte[] dataToSend = ByteBuffer.allocate(packet.toByteArray().length + hmac.length)
                 .put(packet.toByteArray())
                 .put(hmac)
@@ -28,16 +34,18 @@ public class NtpClient {
         DatagramPacket request = new DatagramPacket(dataToSend, dataToSend.length, address, port);
         socket.send(request);
 
-        byte[] buffer = new byte[80]; //valor referente a 48 bytes do NTP + 32 bytes do HMAC
+        byte[] buffer = new byte[64];
         DatagramPacket response = new DatagramPacket(buffer, buffer.length);
         socket.receive(response);
 
         byte[] receivedHmac = Arrays.copyOfRange(buffer, 48, buffer.length);
         byte[] receivedData = Arrays.copyOf(buffer, 48);
 
-        byte[] calculatedHmac = HmacUtil.generateHmac(receivedData, SECRET_KEY);
-        if (!Arrays.equals(receivedHmac, calculatedHmac)) {
-            throw new SecurityException("Authentication failed: Invalid HMAC!");
+        if (useHmac) {
+            byte[] calculatedHmac = HmacUtil.generateHmac(receivedData, "shared-secret");
+            if (!Arrays.equals(receivedHmac, calculatedHmac)) {
+                throw new SecurityException("Authentication failed: Invalid HMAC!");
+            }
         }
 
         NtpPacket receivedPacket = new NtpPacket();
