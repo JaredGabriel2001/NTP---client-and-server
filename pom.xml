@@ -21,7 +21,11 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
+<<<<<<< HEAD
                     <mainClass>org.example.application.main.Main</mainClass>
+=======
+                    <mainClass>org.main.Main</mainClass>
+>>>>>>> 0c91afaf11321c3615c5e84241311176c786fa2c
                 </configuration>
             </plugin>
         </plugins>
