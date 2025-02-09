@@ -11,6 +11,7 @@ import java.util.Arrays;
 public class NtpClient {
     private final boolean useHmac;
     private final int port;
+    private static final String SECRET_KEY = "shared-secret";
 
     public NtpClient(boolean useHmac, int port) {
         this.useHmac = useHmac;
@@ -18,38 +19,64 @@ public class NtpClient {
     }
 
     public void requestTime(String serverAddress) throws Exception {
-        DatagramSocket socket = new DatagramSocket();
-        socket.setSoTimeout(5000);
+        // Utiliza try-with-resources para garantir que o socket seja fechado.
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.setSoTimeout(5000);
+            InetAddress address = InetAddress.getByName(serverAddress);
 
-        InetAddress address = InetAddress.getByName(serverAddress);
-        NtpPacket packet = new NtpPacket();
-        packet.setTransmitTimestamp(System.currentTimeMillis());
+            // Cria o pacote de requisição
+            NtpPacket requestPacket = new NtpPacket();
+            requestPacket.setMode((byte) 3); // Modo cliente
+            // T1: tempo de envio do cliente
+            long t1 = System.currentTimeMillis();
+            requestPacket.setTransmitTimestamp(t1);
 
-        byte[] hmac = useHmac ? HmacUtil.generateHmac(packet.toByteArray(), "shared-secret") : new byte[0];
-        byte[] dataToSend = ByteBuffer.allocate(packet.toByteArray().length + hmac.length)
-                .put(packet.toByteArray())
-                .put(hmac)
-                .array();
+            byte[] packetData = requestPacket.toByteArray();
+            byte[] hmac = useHmac ? HmacUtil.generateHmac(packetData, SECRET_KEY) : new byte[0];
+            byte[] dataToSend = ByteBuffer.allocate(packetData.length + hmac.length)
+                    .put(packetData)
+                    .put(hmac)
+                    .array();
 
-        DatagramPacket request = new DatagramPacket(dataToSend, dataToSend.length, address, port);
-        socket.send(request);
+            DatagramPacket request = new DatagramPacket(dataToSend, dataToSend.length, address, port);
+            socket.send(request);
 
-        byte[] buffer = new byte[64];
-        DatagramPacket response = new DatagramPacket(buffer, buffer.length);
-        socket.receive(response);
+            // Prepara o buffer para a resposta
+            byte[] buffer = new byte[64];
+            DatagramPacket response = new DatagramPacket(buffer, buffer.length);
+            socket.receive(response);
+            // T4: tempo de chegada da resposta no cliente
+            long t4 = System.currentTimeMillis();
 
-        byte[] receivedHmac = Arrays.copyOfRange(buffer, 48, buffer.length);
-        byte[] receivedData = Arrays.copyOf(buffer, 48);
-
-        if (useHmac) {
-            byte[] calculatedHmac = HmacUtil.generateHmac(receivedData, "shared-secret");
-            if (!Arrays.equals(receivedHmac, calculatedHmac)) {
-                throw new SecurityException("Authentication failed: Invalid HMAC!");
+            byte[] receivedData = Arrays.copyOfRange(buffer, 0, 48);
+            if (useHmac) {
+                byte[] receivedHmac = Arrays.copyOfRange(buffer, 48, buffer.length);
+                byte[] calculatedHmac = HmacUtil.generateHmac(receivedData, SECRET_KEY);
+                if (!Arrays.equals(receivedHmac, calculatedHmac)) {
+                    throw new SecurityException("Authentication failed: Invalid HMAC!");
+                }
             }
-        }
 
-        NtpPacket receivedPacket = new NtpPacket();
-        System.arraycopy(receivedData, 0, receivedPacket.toByteArray(), 0, 48);
-        System.out.println("Server Time: " + receivedPacket.getReceiveTimestamp());
+            NtpPacket responsePacket = NtpPacket.fromByteArray(receivedData);
+            // Os timestamps do pacote de resposta:
+            // T1 (Originate Timestamp) – cópia do tempo enviado pelo cliente;
+            // T2 (Receive Timestamp) – tempo em que o servidor recebeu a requisição;
+            // T3 (Transmit Timestamp) – tempo em que o servidor enviou a resposta.
+            long originate = responsePacket.getOriginateTimestamp(); // Deve ser igual a t1
+            long t2 = responsePacket.getReceiveTimestamp();
+            long t3 = responsePacket.getTransmitTimestamp();
+
+            // Cálculo do delay e do offset
+            long roundTripDelay = (t4 - t1) - (t3 - t2);
+            long offset = ((t2 - t1) + (t3 - t4)) / 2;
+
+            System.out.println("Client Send Time (T1): " + t1);
+            System.out.println("Server Receive Time (T2): " + t2);
+            System.out.println("Server Transmit Time (T3): " + t3);
+            System.out.println("Client Receive Time (T4): " + t4);
+            System.out.println("Round Trip Delay: " + roundTripDelay + " ms");
+            System.out.println("Clock Offset: " + offset + " ms");
+            System.out.println("Adjusted Server Time: " + (t4 + offset));
+        }
     }
 }
