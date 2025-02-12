@@ -1,4 +1,4 @@
-Feature: Local client
+Feature: Servidor oficial
 
   Scenario: Sucesso ao executar server oficial
     Given o server oficial esteja configurado corretamente

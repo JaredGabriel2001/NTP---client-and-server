@@ -4,9 +4,9 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
-public class Local_clientSteps {
+public class Local_server_clientSteps {
 
-    //Sucesso ao executar cliente local
+    //Sucesso ao executar
     @Given("o server local esteja sendo executado corretamente")
     public void o_server_local_esteja_sendo_executado_corretamente() {
         // Write code here that turns the phrase above into concrete actions
@@ -23,7 +23,7 @@ public class Local_clientSteps {
         throw new io.cucumber.java.PendingException();
     }
 
-    //Falha ao executar cliente local
+    //Falha ao executar
     @When("o cliente local nao seja executado corretamente")
     public void o_cliente_local_nao_seja_executado_corretamente() {
         // Write code here that turns the phrase above into concrete actions
@@ -34,26 +34,4 @@ public class Local_clientSteps {
         // Write code here that turns the phrase above into concrete actions
         throw new io.cucumber.java.PendingException();
     }
-
-    //Sucesso ao executar cliente local com HMAC
-    @Given("o server local utilizando HMAC esteja sendo executado corretamente")
-    public void o_server_local_utilizando_hmac_esteja_sendo_executado_corretamente() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-    @When("o cliente local utilizando HMAC seja executado corretamente")
-    public void o_cliente_local_utilizando_hmac_seja_executado_corretamente() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    //Falha ao executar cliente local com HMAC
-    @When("o cliente local utilizando HMAC nao seja executado corretamente")
-    public void o_cliente_local_utilizando_hmac_nao_seja_executado_corretamente() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-
-
 }
