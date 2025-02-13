@@ -21,7 +21,7 @@ public class NtpServer {
         try (DatagramSocket socket = new DatagramSocket(port)) {
             System.out.println("NTP Server started on port " + port);
             while (true) {
-                byte[] buffer = new byte[64];
+                byte[] buffer = new byte[80];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 socket.receive(request);
 

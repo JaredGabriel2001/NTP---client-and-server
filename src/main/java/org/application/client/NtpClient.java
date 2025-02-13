@@ -42,7 +42,7 @@ public class NtpClient {
             socket.send(request);
 
             // Prepara o buffer para a resposta
-            byte[] buffer = new byte[64];
+            byte[] buffer = new byte[80];
             DatagramPacket response = new DatagramPacket(buffer, buffer.length);
             socket.receive(response);
             // T4: tempo de chegada da resposta no cliente
