@@ -1,13 +1,11 @@
-Feature: Servidor oficial
+Feature: Official server
 
-  Scenario: Sucesso ao executar server oficial
-    Given o server oficial esteja configurado corretamente
-    When o cliente local (porta 123) seja executado corretamente
-    Then o retorno deve estar correto
+  Scenario: Success when running official server
+    Given the official server is configured correctly
+    When the local client (port 123) runs correctly
+    Then the return must be correct
 
-  Scenario: Falha ao executar server oficial
-    Given o server oficial esteja configurado corretamente
-    When o cliente local (porta 123) nao seja executado corretamente
-    Then uma mensagem de erro deve ser exibida
-
-
+  Scenario: Failed to run official server
+    Given the official server is configured correctly
+    When the local client (port 123) does not run correctly
+    Then an error message should be displayed

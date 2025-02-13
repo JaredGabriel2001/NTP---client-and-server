@@ -44,7 +44,7 @@ public class NtpServer {
 
                 // Cria o pacote de resposta
                 NtpPacket responsePacket = new NtpPacket();
-                responsePacket.setMode((byte) 4);       // Modo servidor
+                responsePacket.setMode((byte) 4);         // Modo servidor
                 responsePacket.setStratum((byte) 1);      // Stratum 1 (servidor primário)
                 responsePacket.setOriginateTimestamp(t1); // Copia T1 para o campo Originate
                 responsePacket.setReceiveTimestamp(t2);   // Define T2

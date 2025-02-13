@@ -1,12 +1,11 @@
 Feature: Local server and client
 
-  Scenario: Sucesso ao executar servidor e cliente local
-    Given o server local esteja sendo executado corretamente
-    When o cliente local seja executado corretamente
-    Then o retorno deve estar correto
+  Scenario: Success when running local server and client
+    Given the local server is running correctly
+    When the local client runs correctly
+    Then the return must be correct
 
-  Scenario: Falha ao executar servidor e cliente local
-    Given o server local esteja sendo executado corretamente
-    When o cliente local nao seja executado corretamente
-    Then uma mensagem de erro deve ser exibida
-
+  Scenario: Failed to run local server and client
+    Given the local server is running correctly
+    When the local client does not run correctly
+    Then an error message should be displayed

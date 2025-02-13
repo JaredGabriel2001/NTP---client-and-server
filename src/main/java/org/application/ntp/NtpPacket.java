@@ -9,23 +9,18 @@ public class NtpPacket {
 
     public NtpPacket() {
         data = new byte[PACKET_SIZE];
-        // Configura LI=0, VN=4 e Mode=3 (cliente) por padrão.
-        data[0] = 0b00100011;
+        data[0] = 0b00100011; // Configura LI=0, VN=4 e Mode=3 (cliente) por padrão.
     }
 
-    /**
-     * Retorna o array interno representando o pacote NTP.
-     */
+     //Retorna o array interno representando o pacote NTP.
     public byte[] toByteArray() {
         return data;
     }
 
-    /**
-     * Cria um objeto NtpPacket a partir de um array de bytes.
-     */
+     //Cria um objeto NtpPacket a partir de um array de bytes.
     public static NtpPacket fromByteArray(byte[] array) {
         if (array == null || array.length < PACKET_SIZE) {
-            throw new IllegalArgumentException("Array deve ter pelo menos " + PACKET_SIZE + " bytes.");
+            throw new IllegalArgumentException("Array must have at least " + PACKET_SIZE + " bytes.");
         }
         NtpPacket packet = new NtpPacket();
         System.arraycopy(array, 0, packet.data, 0, PACKET_SIZE);
@@ -76,7 +71,7 @@ public class NtpPacket {
         return getTimestamp(24);
     }
 
-    // Reference Timestamp (offset 16)
+    //Reference Timestamp (offset 16)
     public void setReferenceTimestamp(long millis) {
         setTimestamp(millis, 16);
     }
@@ -85,7 +80,7 @@ public class NtpPacket {
         return getTimestamp(16);
     }
 
-    // Stratum (byte 1). Para servidores primários, normalmente usa-se 1.
+    //Stratum (byte 1). Para servidores primários, normalmente usa-se 1.
     public void setStratum(byte stratum) {
         data[1] = stratum;
     }
@@ -94,13 +89,13 @@ public class NtpPacket {
         return data[1];
     }
 
-    // Configura o Mode (os 3 bits menos significativos do byte 0).
-    // Exemplo: 3 para cliente e 4 para servidor.
+    //Configura o Mode (os 3 bits menos significativos do byte 0).
+    //Exemplo: 3 para cliente e 4 para servidor.
     public void setMode(byte mode) {
-        data[0] = (byte) ((data[0] & 0xF8) | (mode & 0x07));
+        data[0] = (byte) ((data[0] & 248) | (mode & 7));
     }
 
     public byte getMode() {
-        return (byte) (data[0] & 0x07);
+        return (byte) (data[0] & 7);
     }
 }

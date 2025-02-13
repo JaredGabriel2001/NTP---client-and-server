@@ -1,11 +1,11 @@
 Feature: Local client and server HMAC
 
-  Scenario: Sucesso ao executar cliente e server local com HMAC
-    Given o server local utilizando HMAC esteja sendo executado corretamente
-    When o cliente local utilizando HMAC seja executado corretamente
-    Then o retorno deve estar correto
+  Scenario: Success when running local client and server with HMAC
+    Given the local server using HMAC is running correctly
+    When the local client using HMAC runs correctly
+    Then the return must be correct
 
-  Scenario: Falha ao executar cliente e server local com HMAC
-    Given o server local utilizando HMAC esteja sendo executado corretamente
-    When o cliente local utilizando HMAC nao seja executado corretamente
-    Then uma mensagem de erro deve ser exibida
+  Scenario: Failed to run local client and server with HMAC
+    Given the local server using HMAC is running correctly
+    When the local client using HMAC does not run correctly
+    Then an error message should be displayed
