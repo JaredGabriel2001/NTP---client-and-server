@@ -1,5 +1,8 @@
 //mvn package
 
+//OBS: para executar o servidor local na porta 123, é necessario executar o servidor com o
+//prefixo "sudo", pois é uma porta que necessita de privilégios para ser acessada.
+
 //executar server COM hmac: mvn exec:java -Dexec.args="server hmac"
 //executar client COM hmac: mvn exec:java -Dexec.args="client hmac 127.0.0.1"
 
@@ -34,12 +37,13 @@ public class Main {
             System.exit(1);
         }
 
+        // Alterado: porta padrão para local passa a ser 123
+        int port = 123;
         boolean useHmac = mode.equals("hmac");
-        int port = 8123; // Porta padrão para os modos customizados
 
         if (mode.equals("official")) {
             useHmac = false;
-            port = 123; // Porta oficial NTP
+            port = 123; // Porta oficial NTP permanece 123
         }
 
         if (role.equals("server")) {
@@ -64,6 +68,7 @@ public class Main {
         }
     }
 }
+
 
 
 
