@@ -19,7 +19,6 @@ public class NtpClient {
     }
 
     public void requestTime(String serverAddress) throws Exception {
-        // Utiliza try-with-resources para garantir que o socket seja fechado.
         try (DatagramSocket socket = new DatagramSocket()) {
             socket.setSoTimeout(5000);
             InetAddress address = InetAddress.getByName(serverAddress);
@@ -27,8 +26,9 @@ public class NtpClient {
             // Cria o pacote de requisição
             NtpPacket requestPacket = new NtpPacket();
             requestPacket.setMode((byte) 3); // Modo cliente
-            // T1: tempo de envio do cliente
-            long t1 = System.currentTimeMillis();
+
+            // T1: Tempo de envio do cliente
+            long t1 = toNtpTimestamp(System.currentTimeMillis());
             requestPacket.setTransmitTimestamp(t1);
 
             byte[] packetData = requestPacket.toByteArray();
@@ -45,8 +45,9 @@ public class NtpClient {
             byte[] buffer = new byte[80];
             DatagramPacket response = new DatagramPacket(buffer, buffer.length);
             socket.receive(response);
-            // T4: tempo de chegada da resposta no cliente
-            long t4 = System.currentTimeMillis();
+
+            // T4: Tempo de chegada da resposta no cliente
+            long t4 = toNtpTimestamp(System.currentTimeMillis());
 
             byte[] receivedData = Arrays.copyOfRange(buffer, 0, 48);
             if (useHmac) {
@@ -58,25 +59,45 @@ public class NtpClient {
             }
 
             NtpPacket responsePacket = NtpPacket.fromByteArray(receivedData);
-            // Os timestamps do pacote de resposta:
-            // T1 (Originate Timestamp) – cópia do tempo enviado pelo cliente;
-            // T2 (Receive Timestamp) – tempo em que o servidor recebeu a requisição;
-            // T3 (Transmit Timestamp) – tempo em que o servidor enviou a resposta.
-            long originate = responsePacket.getOriginateTimestamp(); // Deve ser igual a t1
-            long t2 = responsePacket.getReceiveTimestamp();
-            long t3 = responsePacket.getTransmitTimestamp();
+            long originate = responsePacket.getOriginateTimestamp(); // T1
+            long t2 = responsePacket.getReceiveTimestamp(); // T2
+            long t3 = responsePacket.getTransmitTimestamp(); // T3
+
+            // Converte os timestamps para milissegundos do sistema
+            long t1Millis = fromNtpTimestamp(originate);
+            long t2Millis = fromNtpTimestamp(t2);
+            long t3Millis = fromNtpTimestamp(t3);
+            long t4Millis = fromNtpTimestamp(t4);
 
             // Cálculo do delay e do offset
-            long roundTripDelay = (t4 - t1) - (t3 - t2);
-            long offset = ((t2 - t1) + (t3 - t4)) / 2;
+            long roundTripDelay = (t4Millis - t1Millis) - (t3Millis - t2Millis);
+            long offset = ((t2Millis - t1Millis) + (t3Millis - t4Millis)) / 2;
 
-            System.out.println("Client Send Time (T1): " + t1);
-            System.out.println("Server Receive Time (T2): " + t2);
-            System.out.println("Server Transmit Time (T3): " + t3);
-            System.out.println("Client Receive Time (T4): " + t4);
+            System.out.println("Client Send Time (T1): " + t1Millis);
+            System.out.println("Server Receive Time (T2): " + t2Millis);
+            System.out.println("Server Transmit Time (T3): " + t3Millis);
+            System.out.println("Client Receive Time (T4): " + t4Millis);
             System.out.println("Round Trip Delay: " + roundTripDelay + " ms");
             System.out.println("Clock Offset: " + offset + " ms");
-            System.out.println("Adjusted Server Time: " + (t4 + offset));
+            System.out.println("Adjusted Server Time: " + (t4Millis + offset));
         }
+    }
+
+    /**
+     * Converte um timestamp em milissegundos para o formato NTP (64 bits).
+     */
+    public static long toNtpTimestamp(long currentTimeMillis) {
+        long seconds = (currentTimeMillis / 1000) + 2208988800L; // Ajustar para a época NTP
+        long fraction = ((currentTimeMillis % 1000) * 4294967296L) / 1000; // (2^32 / 1000)
+        return (seconds << 32) | (fraction & 0xFFFFFFFFL);
+    }
+
+    /**
+     * Converte um timestamp no formato NTP (64 bits) para milissegundos do sistema.
+     */
+    public static long fromNtpTimestamp(long ntpTimestamp) {
+        long seconds = (ntpTimestamp >>> 32) - 2208988800L; // Retorna à época Unix
+        long fraction = (ntpTimestamp & 0xFFFFFFFFL) * 1000 / 4294967296L; // Converter fração para ms
+        return (seconds * 1000) + fraction;
     }
 }
