@@ -49,6 +49,9 @@ public class NtpServer {
                 responsePacket.setOriginateTimestamp(t1); // Copia T1 para o campo Originate
                 responsePacket.setReceiveTimestamp(t2);   // Define T2
                 responsePacket.setReferenceTimestamp(t2); // Para simplicidade, usamos t2
+                responsePacket.setRootDelay(0);           // Root Delay (0 para servidor primário)
+                responsePacket.setRootDispersion(0);      // Root Dispersion (0 para servidor primário)
+                responsePacket.setReferenceIdentifier(0); // Reference Identifier (0 para servidor primário)
                 long t3 = System.currentTimeMillis();     // T3: tempo de envio da resposta
                 responsePacket.setTransmitTimestamp(t3);
 

@@ -1,15 +1,22 @@
-//mvn package
+// Para compilar e empacotar o projeto:
+// mvn package
 
-//OBS: para executar o servidor local na porta 123, é necessario executar o servidor com o
-//prefixo "sudo", pois é uma porta que necessita de privilégios para ser acessada.
+// OBS: para executar o servidor local na porta 123, é necessário executar o servidor com o
+// prefixo "sudo", pois é uma porta que necessita de privilégios para ser acessada.
 
-//executar server COM hmac: mvn exec:java -Dexec.args="server hmac"
-//executar client COM hmac: mvn exec:java -Dexec.args="client hmac 127.0.0.1"
+// Executar com Maven:
+// - Servidor COM HMAC: mvn exec:java -Dexec.args="server hmac"
+// - Cliente COM HMAC: mvn exec:java -Dexec.args="client hmac 127.0.0.1"
+// - Servidor SEM HMAC: mvn exec:java -Dexec.args="server plain"
+// - Cliente SEM HMAC: mvn exec:java -Dexec.args="client plain 127.0.0.1"
+// - Cliente para servidor oficial: mvn exec:java -Dexec.args="client official a.ntp.br"
 
-//executar server SEM hmac: mvn exec:java -Dexec.args="server plain"
-//executar client SEM hmac: mvn exec:java -Dexec.args="client plain 127.0.0.1"
-
-//executar client para servidor oficial: mvn exec:java -Dexec.args="client official a.ntp.br"
+// Executar sem Maven (após compilar e gerar o .jar):
+// - Servidor COM HMAC: sudo java -jar target/ntp-app.jar server hmac
+// - Cliente COM HMAC: java -jar target/ntp-app.jar client hmac 127.0.0.1
+// - Servidor SEM HMAC: sudo java -jar target/ntp-app.jar server plain
+// - Cliente SEM HMAC: java -jar target/ntp-app.jar client plain 127.0.0.1
+// - Cliente para servidor oficial: java -jar target/ntp-app.jar client official a.ntp.br
 
 package org.application.main;
 

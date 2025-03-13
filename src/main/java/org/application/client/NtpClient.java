@@ -28,7 +28,7 @@ public class NtpClient {
             requestPacket.setMode((byte) 3); // Modo cliente
 
             // T1: Tempo de envio do cliente
-            long t1 = toNtpTimestamp(System.currentTimeMillis());
+            long t1 = NtpClient.toNtpTimestamp(System.currentTimeMillis());
             requestPacket.setTransmitTimestamp(t1);
 
             byte[] packetData = requestPacket.toByteArray();
@@ -47,7 +47,7 @@ public class NtpClient {
             socket.receive(response);
 
             // T4: Tempo de chegada da resposta no cliente
-            long t4 = toNtpTimestamp(System.currentTimeMillis());
+            long t4 = NtpClient.toNtpTimestamp(System.currentTimeMillis());
 
             byte[] receivedData = Arrays.copyOfRange(buffer, 0, 48);
             if (useHmac) {
@@ -64,10 +64,10 @@ public class NtpClient {
             long t3 = responsePacket.getTransmitTimestamp(); // T3
 
             // Converte os timestamps para milissegundos do sistema
-            long t1Millis = fromNtpTimestamp(originate);
-            long t2Millis = fromNtpTimestamp(t2);
-            long t3Millis = fromNtpTimestamp(t3);
-            long t4Millis = fromNtpTimestamp(t4);
+            long t1Millis = NtpClient.fromNtpTimestamp(originate);
+            long t2Millis = NtpClient.fromNtpTimestamp(t2);
+            long t3Millis = NtpClient.fromNtpTimestamp(t3);
+            long t4Millis = NtpClient.fromNtpTimestamp(t4);
 
             // Cálculo do delay e do offset
             long roundTripDelay = (t4Millis - t1Millis) - (t3Millis - t2Millis);
