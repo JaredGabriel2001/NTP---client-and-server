@@ -22,7 +22,7 @@ public class Official_serverSteps {
         try {
             assertTrue(serverConfigured, "O servidor oficial não está configurado corretamente!");
             NtpClient client = new NtpClient(false, port);
-            client.requestTime("pool.ntp.org"); // Testando com um servidor NTP oficial
+            client.requestTime("a.ntp.br"); // Testando com um servidor NTP oficial
             clientException = null;
         } catch (Exception e) {
             clientException = e;
