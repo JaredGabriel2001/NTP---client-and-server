@@ -5,20 +5,20 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.application.client.NtpClient;
 import org.application.server.NtpServer;
+import org.application.client.NtpClient;
 
 public class Local_server_clientSteps {
     private NtpServer server;
     private NtpClient client;
-    private boolean requestSuccess;
+    private boolean clientSuccess;
+    private String errorMessage;
 
-    // Cenário de sucesso: servidor e cliente sem HMAC funcionando corretamente
     @Given("the local server is running correctly")
     public void the_local_server_is_running_correctly() {
+        // Inicia o servidor local em modo "plain" (sem HMAC)
+        server = new NtpServer(false, 123); // Porta 123
         try {
-            // Constrói o servidor sem HMAC na porta 8123
-            server = new NtpServer(false, 8123);
             new Thread(() -> {
                 try {
                     server.start();
@@ -26,44 +26,47 @@ public class Local_server_clientSteps {
                     e.printStackTrace();
                 }
             }).start();
-            Thread.sleep(1000);
-        } catch (Exception e) {
-            fail("Failed to start local server: " + e.getMessage());
+            Thread.sleep(1000); // Aguarda o servidor iniciar
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
     @When("the local client runs correctly")
     public void the_local_client_runs_correctly() {
+        // Inicia o cliente e tenta se conectar ao servidor local
+        client = new NtpClient(false, 123); // Porta 123
         try {
-            client = new NtpClient(false, 8123);
-            client.requestTime("localhost");
-            requestSuccess = true;
+            client.requestTime("127.0.0.1"); // Conecta ao servidor local
+            clientSuccess = true;
         } catch (Exception e) {
-            requestSuccess = false;
-            fail("Client should run correctly but error: " + e.getMessage());
+            clientSuccess = false;
+            errorMessage = e.getMessage();
         }
     }
 
     @Then("the return must be correct")
     public void the_return_must_be_correct() {
-        assertTrue(requestSuccess, "Client ran correctly and returned correct results.");
+        assertTrue(clientSuccess, "O cliente não rodou corretamente.");
     }
 
-    // Cenário de falha: força uma falha usando um hostname inválido
     @When("the local client does not run correctly")
     public void the_local_client_does_not_run_correctly() {
+        // Altera a porta para uma inválida (ex: 124) para forçar erro
+        client = new NtpClient(false, 124); // Porta 124 (não usada pelo servidor)
         try {
-            client = new NtpClient(false, 8123);
-            client.requestTime("invalid.host");
-            requestSuccess = true;
-            fail("Client should have failed but succeeded.");
+            client.requestTime("127.0.0.1"); // Tenta se conectar à porta errada
+            clientSuccess = true;
         } catch (Exception e) {
-            requestSuccess = false;
+            clientSuccess = false;
+            errorMessage = e.getMessage();
         }
     }
 
     @Then("an error message should be displayed")
     public void an_error_message_should_be_displayed() {
-        assertFalse(requestSuccess, "Client did not run correctly and error was reported.");
+        assertFalse(clientSuccess, "O cliente rodou corretamente, mas era esperado um erro.");
+        assertNotNull(errorMessage, "Nenhuma mensagem de erro foi exibida.");
+        System.out.println("Mensagem de erro exibida: " + errorMessage);
     }
 }

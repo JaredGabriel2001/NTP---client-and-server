@@ -20,7 +20,7 @@ public class NtpClient {
 
     public void requestTime(String serverAddress) throws Exception {
         try (DatagramSocket socket = new DatagramSocket()) {
-            socket.setSoTimeout(5000);
+            socket.setSoTimeout(10000); // Timeout de 10 segundos
             InetAddress address = InetAddress.getByName(serverAddress);
 
             // Cria o pacote de requisição
@@ -38,13 +38,17 @@ public class NtpClient {
                     .put(hmac)
                     .array();
 
+            // Envia a requisição
             DatagramPacket request = new DatagramPacket(dataToSend, dataToSend.length, address, port);
+            System.out.println("Enviando requisição para " + serverAddress + ":" + port);
             socket.send(request);
+            System.out.println("Requisição enviada, aguardando resposta...");
 
             // Prepara o buffer para a resposta
             byte[] buffer = new byte[80];
             DatagramPacket response = new DatagramPacket(buffer, buffer.length);
             socket.receive(response);
+            System.out.println("Resposta recebida do servidor.");
 
             // T4: Tempo de chegada da resposta no cliente
             long t4 = NtpClient.toNtpTimestamp(System.currentTimeMillis());

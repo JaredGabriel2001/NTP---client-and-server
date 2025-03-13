@@ -2,63 +2,58 @@ package org.tests.steps;
 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
+import io.cucumber.java.en.Then;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.application.client.NtpClient;
-import org.application.server.NtpServer;
 
 public class Local_server_client_HMACSteps {
-    private NtpServer server;
     private NtpClient client;
-    private boolean requestSuccess;
+    private boolean clientSuccess;
+    private String errorMessage;
 
-    // Cenário de sucesso: servidor e cliente com HMAC funcionando corretamente
     @Given("the local server using HMAC is running correctly")
     public void the_local_server_using_hmac_is_running_correctly() {
-        try {
-            // Constrói o servidor com HMAC habilitado na porta 8123
-            server = new NtpServer(true, 8123);
-            // Inicia o servidor em uma thread separada para não bloquear os testes
-            new Thread(() -> {
-                try {
-                    server.start();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
-            // Aguarda um instante para garantir que o servidor iniciou
-            Thread.sleep(1000);
-        } catch (Exception e) {
-            fail("Failed to start local server with HMAC: " + e.getMessage());
-        }
+        // O servidor já foi iniciado pelo hook, então não precisamos fazer nada aqui
     }
 
     @When("the local client using HMAC runs correctly")
     public void the_local_client_using_hmac_runs_correctly() {
+        // Inicia o cliente com HMAC e tenta se conectar ao servidor local
+        client = new NtpClient(true, 123); // Porta 123 com HMAC
         try {
-            // Cria o cliente com HMAC habilitado na mesma porta
-            client = new NtpClient(true, 8123);
-            // Tenta obter o tempo do servidor usando "localhost"
-            client.requestTime("localhost");
-            requestSuccess = true;
+            client.requestTime("127.0.0.1"); // Conecta ao servidor local
+            clientSuccess = true; // Indica que o cliente rodou corretamente
         } catch (Exception e) {
-            requestSuccess = false;
-            fail("Client with HMAC should run correctly, but error: " + e.getMessage());
+            clientSuccess = false;
+            errorMessage = e.getMessage();
         }
-        assertTrue(requestSuccess, "Client with HMAC ran correctly");
     }
 
-    // Cenário de falha: força uma falha (por exemplo, usando um hostname inválido)
+    @Then("the return must be correct with HMAC")
+    public void the_return_must_be_correct_with_HMAC() {
+        assertTrue(clientSuccess, "O cliente não rodou corretamente.");
+        System.out.println("Cliente rodou corretamente e recebeu uma resposta válida.");
+    }
+
     @When("the local client using HMAC does not run correctly")
     public void the_local_client_using_hmac_does_not_run_correctly() {
+        // Simula um erro no cliente (por exemplo, servidor não disponível ou HMAC inválido)
+        client = new NtpClient(true, 124); // Porta 124 (não usada pelo servidor)
         try {
-            client = new NtpClient(true, 8123);
-            client.requestTime("invalid.host");
-            requestSuccess = true;
-            fail("Client with HMAC should have failed but succeeded.");
+            client.requestTime("127.0.0.1"); // Tenta se conectar à porta errada
+            clientSuccess = true; // Se não lançar exceção, o cliente rodou corretamente
         } catch (Exception e) {
-            requestSuccess = false;
+            clientSuccess = false;
+            errorMessage = e.getMessage();
         }
-        assertFalse(requestSuccess, "Client with HMAC did not run correctly as expected");
+    }
+
+    @Then("an error message should be displayed with HMAC")
+    public void an_error_message_should_be_displayed_with_HMAC() {
+        // Verifica se uma mensagem de erro foi exibida
+        assertFalse(clientSuccess, "O cliente rodou corretamente, mas era esperado um erro.");
+        assertNotNull(errorMessage, "Nenhuma mensagem de erro foi exibida.");
+        System.out.println("Mensagem de erro exibida: " + errorMessage);
     }
 }

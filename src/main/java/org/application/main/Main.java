@@ -1,7 +1,7 @@
 // Para compilar e empacotar o projeto:
 // mvn package
 
-// OBS: para executar o servidor local na porta 123, é necessário executar o servidor com o
+// OBS: para executar o servidor local na porta 123 no linux, é necessário executar o servidor com o
 // prefixo "sudo", pois é uma porta que necessita de privilégios para ser acessada.
 
 // Executar com Maven:
