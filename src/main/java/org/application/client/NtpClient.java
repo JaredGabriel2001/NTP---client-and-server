@@ -26,11 +26,10 @@ public class NtpClient {
             // Cria o pacote de requisição
             NtpPacket requestPacket = new NtpPacket();
             requestPacket.setMode((byte) 3); // Modo cliente
-
-            // T1: Tempo de envio do cliente
-            long t1 = NtpClient.toNtpTimestamp(System.currentTimeMillis());
+            long t1 = toNtpTimestamp(System.currentTimeMillis());
             requestPacket.setTransmitTimestamp(t1);
 
+            // Gera HMAC (se necessário)
             byte[] packetData = requestPacket.toByteArray();
             byte[] hmac = useHmac ? HmacUtil.generateHmac(packetData, SECRET_KEY) : new byte[0];
             byte[] dataToSend = ByteBuffer.allocate(packetData.length + hmac.length)
@@ -40,68 +39,59 @@ public class NtpClient {
 
             // Envia a requisição
             DatagramPacket request = new DatagramPacket(dataToSend, dataToSend.length, address, port);
-            System.out.println("Enviando requisição para " + serverAddress + ":" + port);
+            System.out.println("[Cliente] Enviando requisição para " + serverAddress + ":" + port);
             socket.send(request);
-            System.out.println("Requisição enviada, aguardando resposta...");
+            System.out.println("[Cliente] Requisição enviada. Aguardando resposta...");
 
-            // Prepara o buffer para a resposta
+            // Recebe a resposta
             byte[] buffer = new byte[80];
             DatagramPacket response = new DatagramPacket(buffer, buffer.length);
             socket.receive(response);
-            System.out.println("Resposta recebida do servidor.");
+            System.out.println("[Cliente] Resposta recebida!");
 
-            // T4: Tempo de chegada da resposta no cliente
-            long t4 = NtpClient.toNtpTimestamp(System.currentTimeMillis());
-
+            // Valida HMAC (se necessário)
             byte[] receivedData = Arrays.copyOfRange(buffer, 0, 48);
             if (useHmac) {
                 byte[] receivedHmac = Arrays.copyOfRange(buffer, 48, buffer.length);
                 byte[] calculatedHmac = HmacUtil.generateHmac(receivedData, SECRET_KEY);
                 if (!Arrays.equals(receivedHmac, calculatedHmac)) {
-                    throw new SecurityException("Authentication failed: Invalid HMAC!");
+                    throw new SecurityException("HMAC inválido na resposta!");
                 }
             }
 
+            // Processa a resposta
             NtpPacket responsePacket = NtpPacket.fromByteArray(receivedData);
-            long originate = responsePacket.getOriginateTimestamp(); // T1
-            long t2 = responsePacket.getReceiveTimestamp(); // T2
-            long t3 = responsePacket.getTransmitTimestamp(); // T3
+            long t2 = responsePacket.getReceiveTimestamp();
+            long t3 = responsePacket.getTransmitTimestamp();
+            long t4 = toNtpTimestamp(System.currentTimeMillis());
 
-            // Converte os timestamps para milissegundos do sistema
-            long t1Millis = NtpClient.fromNtpTimestamp(originate);
-            long t2Millis = NtpClient.fromNtpTimestamp(t2);
-            long t3Millis = NtpClient.fromNtpTimestamp(t3);
-            long t4Millis = NtpClient.fromNtpTimestamp(t4);
+            // Converte timestamps para milissegundos
+            long t1Millis = fromNtpTimestamp(t1);
+            long t2Millis = fromNtpTimestamp(t2);
+            long t3Millis = fromNtpTimestamp(t3);
+            long t4Millis = fromNtpTimestamp(t4);
 
-            // Cálculo do delay e do offset
-            long roundTripDelay = (t4Millis - t1Millis) - (t3Millis - t2Millis);
-            long offset = ((t2Millis - t1Millis) + (t3Millis - t4Millis)) / 2;
-
-            System.out.println("Client Send Time (T1): " + t1Millis);
-            System.out.println("Server Receive Time (T2): " + t2Millis);
-            System.out.println("Server Transmit Time (T3): " + t3Millis);
-            System.out.println("Client Receive Time (T4): " + t4Millis);
-            System.out.println("Round Trip Delay: " + roundTripDelay + " ms");
-            System.out.println("Clock Offset: " + offset + " ms");
-            System.out.println("Adjusted Server Time: " + (t4Millis + offset));
+            // Exibe os resultados
+            System.out.println("T1 (Cliente): " + t1Millis);
+            System.out.println("T2 (Servidor): " + t2Millis);
+            System.out.println("T3 (Servidor): " + t3Millis);
+            System.out.println("T4 (Cliente): " + t4Millis);
+        } catch (Exception e) {
+            System.err.println("[Cliente] Erro: " + e.getMessage());
+            throw e; // Propaga a exceção para o teste falhar
         }
     }
 
-    /**
-     * Converte um timestamp em milissegundos para o formato NTP (64 bits).
-     */
-    public static long toNtpTimestamp(long currentTimeMillis) {
-        long seconds = (currentTimeMillis / 1000) + 2208988800L; // Ajustar para a época NTP
-        long fraction = ((currentTimeMillis % 1000) * 4294967296L) / 1000; // (2^32 / 1000)
-        return (seconds << 32) | (fraction & 0xFFFFFFFFL);
+    // Métodos de conversão de timestamp
+    public static long toNtpTimestamp(long millis) {
+        long seconds = (millis / 1000) + 2208988800L;
+        long fraction = ((millis % 1000) * 0x100000000L) / 1000;
+        return (seconds << 32) | fraction;
     }
 
-    /**
-     * Converte um timestamp no formato NTP (64 bits) para milissegundos do sistema.
-     */
     public static long fromNtpTimestamp(long ntpTimestamp) {
-        long seconds = (ntpTimestamp >>> 32) - 2208988800L; // Retorna à época Unix
-        long fraction = (ntpTimestamp & 0xFFFFFFFFL) * 1000 / 4294967296L; // Converter fração para ms
+        long seconds = (ntpTimestamp >>> 32) - 2208988800L;
+        long fraction = (ntpTimestamp & 0xFFFFFFFFL) * 1000 / 0x100000000L;
         return (seconds * 1000) + fraction;
     }
 }

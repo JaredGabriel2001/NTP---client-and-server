@@ -4,26 +4,34 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import static org.junit.jupiter.api.Assertions.*;
-
+import org.application.server.NtpServer;
 import org.application.client.NtpClient;
 
 public class Local_server_client_HMACSteps {
+    private NtpServer server;
     private NtpClient client;
     private boolean clientSuccess;
     private String errorMessage;
 
     @Given("the local server using HMAC is running correctly")
-    public void the_local_server_using_hmac_is_running_correctly() {
-        // O servidor já foi iniciado pelo hook, então não precisamos fazer nada aqui
+    public void startServer() throws InterruptedException {
+        server = new NtpServer(true, 123);
+        new Thread(() -> {
+            try {
+                server.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+        Thread.sleep(2000); // Aguarda 2 segundos para o servidor iniciar
     }
 
     @When("the local client using HMAC runs correctly")
-    public void the_local_client_using_hmac_runs_correctly() {
-        // Inicia o cliente com HMAC e tenta se conectar ao servidor local
-        client = new NtpClient(true, 123); // Porta 123 com HMAC
+    public void runClient() {
+        client = new NtpClient(true, 123);
         try {
-            client.requestTime("127.0.0.1"); // Conecta ao servidor local
-            clientSuccess = true; // Indica que o cliente rodou corretamente
+            client.requestTime("127.0.0.1");
+            clientSuccess = true;
         } catch (Exception e) {
             clientSuccess = false;
             errorMessage = e.getMessage();
@@ -31,18 +39,16 @@ public class Local_server_client_HMACSteps {
     }
 
     @Then("the return must be correct with HMAC")
-    public void the_return_must_be_correct_with_HMAC() {
-        assertTrue(clientSuccess, "O cliente não rodou corretamente.");
-        System.out.println("Cliente rodou corretamente e recebeu uma resposta válida.");
+    public void verifySuccess() {
+        assertTrue(clientSuccess, "Cliente falhou: " + errorMessage);
     }
 
     @When("the local client using HMAC does not run correctly")
-    public void the_local_client_using_hmac_does_not_run_correctly() {
-        // Simula um erro no cliente (por exemplo, servidor não disponível ou HMAC inválido)
-        client = new NtpClient(true, 124); // Porta 124 (não usada pelo servidor)
+    public void runInvalidClient() {
+        client = new NtpClient(true, 124); // Porta inválida
         try {
-            client.requestTime("127.0.0.1"); // Tenta se conectar à porta errada
-            clientSuccess = true; // Se não lançar exceção, o cliente rodou corretamente
+            client.requestTime("127.0.0.1");
+            clientSuccess = true;
         } catch (Exception e) {
             clientSuccess = false;
             errorMessage = e.getMessage();
@@ -50,10 +56,9 @@ public class Local_server_client_HMACSteps {
     }
 
     @Then("an error message should be displayed with HMAC")
-    public void an_error_message_should_be_displayed_with_HMAC() {
-        // Verifica se uma mensagem de erro foi exibida
-        assertFalse(clientSuccess, "O cliente rodou corretamente, mas era esperado um erro.");
-        assertNotNull(errorMessage, "Nenhuma mensagem de erro foi exibida.");
-        System.out.println("Mensagem de erro exibida: " + errorMessage);
+    public void verifyError() {
+        assertFalse(clientSuccess, "Cliente deveria ter falhado!");
+        assertNotNull(errorMessage, "Nenhuma mensagem de erro foi gerada.");
+        System.out.println("Erro esperado: " + errorMessage);
     }
 }
